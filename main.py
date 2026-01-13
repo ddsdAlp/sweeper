@@ -2,6 +2,8 @@ import mss
 import pyautogui
 import time
 
+import mouse
+
 # MEDIUM BOARD - 16x16
 BOARD_TOP = 493
 BOARD_LEFT = 878
@@ -10,7 +12,7 @@ BOARD_HEIGHT = 576
 
 ROWS, COLS = 16, 16
 CELL_SIZE = BOARD_WIDTH // ROWS # 36
-print(CELL_SIZE)
+BOARD = [["-" for i in range(COLS)] for j in range(ROWS)]
 
 colorDict = {
     (112, 120, 128) : "closed",
@@ -23,11 +25,6 @@ colorDict = {
     (221, 170, 34)  : "5",
     (102, 204, 204) : "6",
 }
-
-# Problematic Initialization:
-# BOARD = [["-"] * COLS] * ROWS
-# Correct Initialization:
-BOARD = [["-" for i in range(COLS)] for j in range(ROWS)]
 
 # Configure board coordinates
 def configureCoords():
@@ -53,7 +50,7 @@ def printBoard():
         print(temp)
 
 # turn screenshot into BOARD array
-def processBoard(img):
+def ssToArr(img):
     for row in range(ROWS):
         rowCoord = row * CELL_SIZE
         for col in range(COLS):
@@ -74,7 +71,65 @@ def processBoard(img):
                 else:
                     BOARD[row][col] = "0"
 
-    printBoard()
+    # printBoard()
+
+# get all coords of neighbouring tiles
+def getNeighbours(row, col):
+    neighbours = []
+
+    for i in [-1, 0, 1]:
+        for j in [-1, 0, 1]:
+            if i == 0 and j == 0:
+                continue
+            if 0 <= row + i <= (16 - 1) and 0 <= col + j <= (16 - 1):
+                neighbours.append((row + i, col + j))
+    
+    return neighbours
+
+def openClosedNeighbours(neighbours):
+    for i, j in neighbours:
+        if BOARD[i][j] == "-":
+            BOARD[i][j] = "-1"
+            mouse.leftClickCell(i, j)
+
+def flagClosedNeighbours(neighbours):
+    for i, j in neighbours:
+        if BOARD[i][j] == "-":
+            BOARD[i][j] = "*"
+            mouse.rightClickCell(i, j)
+
+def checkNeighbours(neighbours):
+    closedCount = 0
+    flaggedCount = 0
+
+    for i, j in neighbours:
+        if BOARD[i][j] == "-":
+            closedCount += 1
+        elif BOARD[i][j] == "*":
+            flaggedCount += 1
+    
+    return closedCount, flaggedCount
+
+def processBoard():
+    for row in range(ROWS):
+        for col in range(COLS):
+            tile = BOARD[row][col]
+
+            # skip unnecessarry tiles
+            if tile in ["-", "0", "*"]:
+                continue
+            
+            # get all neighbour coords
+            neighbours = getNeighbours(row, col)
+
+            # number of closed and flagged neighbours
+            closed, flagged = checkNeighbours(neighbours)
+
+            if int(tile) == closed + flagged:
+                flagClosedNeighbours(neighbours)
+            
+            if int(tile) == flagged:
+                openClosedNeighbours(neighbours)                 
 
 # take screenshot of the board
 with mss.mss() as sct:
@@ -84,7 +139,16 @@ with mss.mss() as sct:
 
     # Grab the data
     sct_img = sct.grab(monitor)
-    processBoard(sct_img)
+    ssToArr(sct_img)
     
+    loop = 0
+    while loop < 10:
+        loop += 1
+
+        processBoard()
+
+        sct_img = sct.grab(monitor)
+        ssToArr(sct_img)
+
     # Save to the picture file
     mss.tools.to_png(sct_img.rgb, sct_img.size, output=output)
