@@ -99,14 +99,25 @@ def getClosedNeighbours(row, col):
     
     return closedNeighbours
 
+def getFlaggedNeighbours(row, col):
+    flaggedNeighbours = []
+    neighbours = getNeighbours(row, col)
+
+    for i, j in neighbours:
+        if BOARD[i][j].state == "*":
+            flaggedNeighbours.append((i,j))
+    
+    return flaggedNeighbours
+
 def checkBombPairs(neighbours):
     temp = []
     for i, j in neighbours:
-
         if BOARD[i][j].state in ["-", "0", "*"]:
             continue
+        
+        flagged = getFlaggedNeighbours(i, j)
 
-        if int(BOARD[i][j].state) - BOARD[i][j].flaggedCount == 1:
+        if int(BOARD[i][j].state) - flagged == 1:
             temp.append((i,j))
     
     return temp
