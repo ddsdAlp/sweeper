@@ -2,8 +2,21 @@ import mss
 import pyautogui
 import time
 from dataclasses import dataclass, field
-
 import mouse
+from config import (
+    BOARD_TOP,
+    BOARD_LEFT,
+    BOARD_WIDTH,
+    BOARD_HEIGHT,
+    EMOJI_TOP,
+    EMOJI_LEFT,
+    EMOJI_WIDTH,
+    EMOJI_HEIGHT,
+    ROWS,
+    COLS,
+    CELL_SIZE,
+    COLOR_DICT
+)
 
 log = open("logfile.txt", "w")
 
@@ -14,31 +27,7 @@ class Tile:
     flaggedCount: int
     closedGroup: list = field(default_factory=list)
 
-# MEDIUM BOARD - 16x16
-BOARD_TOP = 493
-BOARD_LEFT = 878
-BOARD_WIDTH = 576
-BOARD_HEIGHT = 576
-EMOJI_TOP = 405
-EMOJI_LEFT = 1139
-EMOJI_WIDTH = 55
-EMOJI_HEIGHT = 55
-
-ROWS, COLS = 16, 16
-CELL_SIZE = BOARD_WIDTH // ROWS # 36
 BOARD = [[Tile(state="-", closedCount=0, flaggedCount=0, closedGroup=[]) for i in range(COLS)] for j in range(ROWS)]
-
-colorDict = {
-    (112, 120, 128) : "closed",
-    (30, 38, 46) : "opened",
-    (216, 224, 232) : "*", # flag
-    (124, 199, 255) : "1",
-    (102, 194, 102) : "2",
-    (255, 119, 136) : "3",
-    (238, 136, 255) : "4",
-    (221, 170, 34)  : "5",
-    (102, 204, 204) : "6",
-}
 
 # Configure board coordinates
 def configureCoords():
@@ -74,14 +63,14 @@ def ssToArr(img):
 
             # closed
             if topLeftRGB == (112, 120, 128):
-                if typeCheckRGB in colorDict:
-                    BOARD[row][col].state = colorDict[typeCheckRGB]
+                if typeCheckRGB in COLOR_DICT:
+                    BOARD[row][col].state = COLOR_DICT[typeCheckRGB]
                 else:
                     BOARD[row][col].state = "-"
             # opened
             elif topLeftRGB == (30, 38, 46):
-                if typeCheckRGB in colorDict:
-                    BOARD[row][col].state = colorDict[typeCheckRGB]
+                if typeCheckRGB in COLOR_DICT:
+                    BOARD[row][col].state = COLOR_DICT[typeCheckRGB]
                 else:
                     BOARD[row][col].state = "0"
 
