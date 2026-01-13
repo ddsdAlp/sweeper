@@ -1,8 +1,15 @@
 import mss
 import pyautogui
 import time
+from dataclasses import dataclass, field
 
 import mouse
+
+@dataclass
+class Tile:
+    state: str
+    bombGroupCount: int
+    bombGroup: list = field(default_factory=list)
 
 # MEDIUM BOARD - 16x16
 BOARD_TOP = 493
@@ -12,7 +19,7 @@ BOARD_HEIGHT = 576
 
 ROWS, COLS = 16, 16
 CELL_SIZE = BOARD_WIDTH // ROWS # 36
-BOARD = [["-" for i in range(COLS)] for j in range(ROWS)]
+BOARD = [[Tile(state="-", bombGroupCount=0, bombGroup=[]) for i in range(COLS)] for j in range(ROWS)]
 
 colorDict = {
     (112, 120, 128) : "closed",
@@ -46,7 +53,7 @@ def printBoard():
     for row in range(ROWS):
         temp = ""
         for col in range(COLS):
-            temp = temp + str(BOARD[row][col]) + " "
+            temp = temp + str(BOARD[row][col].state) + " "
         print(temp)
 
 # turn screenshot into BOARD array
@@ -61,15 +68,15 @@ def ssToArr(img):
             # closed
             if topLeftRGB == (112, 120, 128):
                 if typeCheckRGB in colorDict:
-                    BOARD[row][col] = colorDict[typeCheckRGB]
+                    BOARD[row][col].state = colorDict[typeCheckRGB]
                 else:
-                    BOARD[row][col] = "-"
+                    BOARD[row][col].state = "-"
             # opened
             elif topLeftRGB == (30, 38, 46):
                 if typeCheckRGB in colorDict:
-                    BOARD[row][col] = colorDict[typeCheckRGB]
+                    BOARD[row][col].state = colorDict[typeCheckRGB]
                 else:
-                    BOARD[row][col] = "0"
+                    BOARD[row][col].state = "0"
 
     # printBoard()
 
@@ -86,29 +93,33 @@ def getNeighbours(row, col):
     
     return neighbours
 
-def openClosedNeighbours(neighbours):
-    for i, j in neighbours:
-        if BOARD[i][j] == "-":
-            BOARD[i][j] = "-1"
-            mouse.leftClickCell(i, j)
-
-def flagClosedNeighbours(neighbours):
-    for i, j in neighbours:
-        if BOARD[i][j] == "-":
-            BOARD[i][j] = "*"
-            mouse.rightClickCell(i, j)
-
-def checkNeighbours(neighbours):
+def checkTileCounts(neighbours):
     closedCount = 0
     flaggedCount = 0
 
     for i, j in neighbours:
-        if BOARD[i][j] == "-":
+        if BOARD[i][j].state == "-":
             closedCount += 1
-        elif BOARD[i][j] == "*":
+        elif BOARD[i][j].state == "*":
             flaggedCount += 1
     
     return closedCount, flaggedCount
+
+# =========== Action Functions ===========
+
+def openClosedNeighbours(neighbours):
+    for i, j in neighbours:
+        if BOARD[i][j].state == "-":
+            BOARD[i][j].state = "-1"
+            mouse.leftClickCell(i, j)
+
+def flagClosedNeighbours(neighbours):
+    for i, j in neighbours:
+        if BOARD[i][j].state == "-":
+            BOARD[i][j].state = "*"
+            mouse.rightClickCell(i, j)
+
+# ========================================
 
 def processBoard():
     for row in range(ROWS):
@@ -116,19 +127,19 @@ def processBoard():
             tile = BOARD[row][col]
 
             # skip unnecessarry tiles
-            if tile in ["-", "0", "*"]:
+            if tile.state in ["-", "0", "*"]:
                 continue
             
             # get all neighbour coords
             neighbours = getNeighbours(row, col)
 
             # number of closed and flagged neighbours
-            closed, flagged = checkNeighbours(neighbours)
+            closed, flagged = checkTileCounts(neighbours)
 
-            if int(tile) == closed + flagged:
+            if int(tile.state) == closed + flagged:
                 flagClosedNeighbours(neighbours)
             
-            if int(tile) == flagged:
+            if int(tile.state) == flagged:
                 openClosedNeighbours(neighbours)                 
 
 # take screenshot of the board
