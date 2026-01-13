@@ -117,7 +117,7 @@ def checkBombPairs(neighbours):
         
         flagged = getFlaggedNeighbours(i, j)
 
-        if int(BOARD[i][j].state) - flagged == 1:
+        if int(BOARD[i][j].state) - len(flagged) == 1:
             temp.append((i,j))
     
     return temp
