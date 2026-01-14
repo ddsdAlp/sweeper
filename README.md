@@ -4,7 +4,16 @@
 </p>
 A fully automated Minesweeper solver written in Python that uses screen capture and logical reasoning to play the game. The project is currently a work in progress.  
 
-## Usage
+## Installation & Usage
+```bash
+git clone https://github.com/ddsdAlp/sweeper.git
+cd sweeper
+
+python -m venv .venv
+.venv\Scripts\activate
+
+pip install -r requirements.txt
+```
 1. Open 'minesweeper.online' in your browser
 2. Run the 'calibration.py' script to detect board coordinates
 3. Adjust coordinates in 'config.py' if needed

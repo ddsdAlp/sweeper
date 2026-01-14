@@ -2,7 +2,8 @@
 *.pyc
 *.aseprite
 
-/data
+data/
 __pycache__/
+.venv/
 
 test.py
