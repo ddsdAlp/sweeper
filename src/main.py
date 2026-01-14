@@ -44,11 +44,11 @@ def ssToArr(img):
         for col in range(COLS):
             colCoord = col * CELL_SIZE
             topLeftRGB = img.pixel(colCoord, rowCoord)
-            typeCheckRGB = img.pixel(colCoord + int(0.6 * CELL_SIZE), rowCoord + int(0.72 * CELL_SIZE))
+            typeCheckRGB = img.pixel(colCoord + round(0.6 * CELL_SIZE), rowCoord + round(0.73 * CELL_SIZE))
 
             # closed
             if topLeftRGB == (112, 120, 128):
-                if img.pixel(colCoord + CELL_SIZE/2 - 1, rowCoord + CELL_SIZE/2 - 1) == (102, 221, 102):
+                if img.pixel(colCoord + CELL_SIZE//2 - 1, rowCoord + CELL_SIZE//2 - 1) == (102, 221, 102):
                     BOARD[row][col].state = "x"
                 elif typeCheckRGB in COLOR_DICT:
                     BOARD[row][col].state = COLOR_DICT[typeCheckRGB]
