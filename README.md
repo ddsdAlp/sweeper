@@ -5,10 +5,10 @@
 A fully automated Minesweeper solver written in Python that uses screen capture and logical reasoning to play the game. The project is currently a work in progress.  
 
 ## Usage
-1. Open "minesweeper.online" in your browser
-2. Run the calibration.py script to detect board coordinates
-3. Adjust coordinates in config.py if needed
-4. Run the solver (main.py)
+1. Open 'minesweeper.online' in your browser
+2. Run the 'calibration.py' script to detect board coordinates
+3. Adjust coordinates in 'config.py' if needed
+4. Run the solver ('main.py')
 
 ## Limitations
 - Requires fixed screen resolution and browser position

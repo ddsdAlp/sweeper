@@ -4,18 +4,21 @@ from random import random, uniform
 
 # one-time helper to configure board coordinates
 def configureCoords():
-    print("move to top-left of board")
+    print("Move cursor to the top-left of the board")
     time.sleep(5)
     x1, y1 = pyautogui.position()
     print("Top-left:", x1, y1)
 
-    print("move to bottom-right of board")
+    print("Move cursor to the bottom-right of the board")
     time.sleep(5)
     x2, y2 = pyautogui.position()
     print("Bottom-right:", x2, y2)
 
-    print("Width:", x2 - x1)
-    print("Height:", y2 - y1)
+    print("Change the values in 'config.py' with the values below")
+    print("Board Top:", y1)
+    print("Board Left:", x1)
+    print("Board Width:", x2 - x1)
+    print("Board Height:", y2 - y1)
 
 # human reaction time 150 - 300 ms
 def waitRandom():
