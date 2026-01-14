@@ -1,8 +1,8 @@
 *.png
 *.pyc
 *.aseprite
+*.txt
 
-data/
 __pycache__/
 .venv/
 

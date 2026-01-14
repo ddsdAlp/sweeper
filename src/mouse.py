@@ -1,7 +1,11 @@
 import pyautogui
 import time
 from random import random, uniform
-
+from config import (
+    BOARD_TOP,
+    BOARD_LEFT,
+    CELL_SIZE
+)
 # one-time helper to configure board coordinates
 def configureCoords():
     print("Move cursor to the top-left of the board")
@@ -30,31 +34,32 @@ def waitRandom():
     time.sleep(t)
 
 def offsetRandom():
-    o = uniform(-8, 8)
+    value = CELL_SIZE / 4
+    o = uniform(-value, value)
     return o
 
 def leftClickCell(row, col):
-    CENTER_OFFSET = 18
-    BOARD_TOP = 493 + CENTER_OFFSET + offsetRandom()
-    BOARD_LEFT = 878 + CENTER_OFFSET + offsetRandom()
+    CENTER_OFFSET = CELL_SIZE / 2
+    top = BOARD_TOP + CENTER_OFFSET + offsetRandom()
+    left = BOARD_LEFT + CENTER_OFFSET + offsetRandom()
 
-    rowCoord = row * 36
-    colCoord = col * 36
+    rowCoord = row * CELL_SIZE
+    colCoord = col * CELL_SIZE
 
     waitRandom()
-    pyautogui.moveTo(BOARD_LEFT + colCoord, BOARD_TOP + rowCoord)
+    pyautogui.moveTo(left + colCoord, top + rowCoord)
     pyautogui.click()
 
 def rightClickCell(row, col):
-    CENTER_OFFSET = 18
-    BOARD_TOP = 493 + CENTER_OFFSET + offsetRandom()
-    BOARD_LEFT = 878 + CENTER_OFFSET + offsetRandom()
+    CENTER_OFFSET = CELL_SIZE / 2
+    top = BOARD_TOP + CENTER_OFFSET + offsetRandom()
+    left = BOARD_LEFT + CENTER_OFFSET + offsetRandom()
 
-    rowCoord = row * 36
-    colCoord = col * 36
+    rowCoord = row * CELL_SIZE
+    colCoord = col * CELL_SIZE
 
     waitRandom()
-    pyautogui.moveTo(BOARD_LEFT + colCoord, BOARD_TOP + rowCoord)
+    pyautogui.moveTo(left + colCoord, top + rowCoord)
     pyautogui.click(button='right')
 
 
