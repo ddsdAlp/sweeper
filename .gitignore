@@ -1,7 +1,8 @@
 *.png
 *.pyc
-/tiles
-/emoji
+
+/assets
+/data
 __pycache__/
+
 test.py
-logfile.txt

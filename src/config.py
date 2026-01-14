@@ -1,3 +1,8 @@
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+LOG_FILE_PATH = str(BASE_DIR / "data" / "logfile.txt")
+
 # MEDIUM BOARD - 16x16
 BOARD_TOP = 493
 BOARD_LEFT = 878

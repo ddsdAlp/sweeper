@@ -1,9 +1,8 @@
 import mss
-import pyautogui
-import time
 from dataclasses import dataclass, field
 import mouse
 from config import (
+    LOG_FILE_PATH,
     BOARD_TOP,
     BOARD_LEFT,
     BOARD_WIDTH,
@@ -18,7 +17,7 @@ from config import (
     COLOR_DICT
 )
 
-log = open("logfile.txt", "w")
+log = open(LOG_FILE_PATH, "w")
 
 @dataclass
 class Tile:
@@ -28,21 +27,6 @@ class Tile:
     closedGroup: list = field(default_factory=list)
 
 BOARD = [[Tile(state="-", closedCount=0, flaggedCount=0, closedGroup=[]) for i in range(COLS)] for j in range(ROWS)]
-
-# Configure board coordinates
-def configureCoords():
-    print("move to top-left of board")
-    time.sleep(5)
-    x1, y1 = pyautogui.position()
-    print("Top-left:", x1, y1)
-
-    print("move to bottom-right of board")
-    time.sleep(5)
-    x2, y2 = pyautogui.position()
-    print("Bottom-right:", x2, y2)
-
-    print("Width:", x2 - x1)
-    print("Height:", y2 - y1)
 
 # print the BOARD array
 def printBoard():
@@ -236,15 +220,19 @@ with mss.mss() as sct:
     monitor2 = {"top": EMOJI_TOP, "left": EMOJI_LEFT, "width": EMOJI_WIDTH, "height": EMOJI_HEIGHT}
     output2 = "sct-{top}x{left}_{width}x{height}.png".format(**monitor2)
     
+    # main solver loop
     while True:
-        # Grab the data
+        
+        # grab the board and emoji data
         ss_board = sct.grab(monitor)
         ss_emoji = sct.grab(monitor2)
         ssToArr(ss_board)
-
+        
+        # break condition, win or fail
         if ss_emoji.pixel(33, 20) == (0,0,0):
             break
-
+        
+        # solver logic
         processBoard()
 
     # Save to the picture file
