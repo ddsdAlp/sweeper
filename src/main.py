@@ -2,6 +2,7 @@ import mss
 from dataclasses import dataclass, field
 import mouse
 from config import (
+    DATA_DIR,
     LOG_FILE_PATH,
     BOARD_TOP,
     BOARD_LEFT,
@@ -164,31 +165,29 @@ def processBoard():
             # number of closed, flagged neighbours updated
             getTileCounts(row, col, neighbours)
 
+            # ===== basic pattern 1 =====
             if int(tile.state) == tile.closedCount + tile.flaggedCount:
                 flagClosedNeighbours(neighbours)
             
+            # ===== basic pattern 2 =====
             if int(tile.state) == tile.flaggedCount:
                 openClosedNeighbours(neighbours)
-            
-            # check if any neighbour has reduced bomb count of 1
-            # if so, check their closedGroup
-            # if int(closedNeigbours - closedGroup) = int(state), flag all
 
+            # ===== complex pattern =====
             closedNeighbours = tile.closedGroup
             possibleNeighbours = checkBombPairs(neighbours)
 
             for i, j in possibleNeighbours:
                 possibleGroup = getClosedNeighbours(i, j)
-                
                 if len(possibleGroup) <= 1:
                     continue
-
-                # check if all possibleGroup is in closedNeighbours
+                
+                result = list(set(closedNeighbours) - set(possibleGroup))
+                if len(result) == 0:
+                    continue
+                
+                # check the scenarios if all possibleGroup is in closedNeighbours
                 if set(possibleGroup).issubset(set(closedNeighbours)):
-                    result = list(set(closedNeighbours) - set(possibleGroup))
-
-                    if len(result) == 0:
-                        continue
                     
                     text = "Coord: (" + str(row) + "," + str(col) + ")\nResults: " + str(result)
                     log.write(text)
@@ -198,34 +197,47 @@ def processBoard():
                     log.write(text)
                     text = "\nNeighbours Containing Max One Mine: " + str(possibleGroup) + "\n\n"
                     log.write(text)
-
-                    if int(tile.state) == 1 and tile.flaggedCount == 0:
+                    
+                    # if bomb link in neighbours and there are no other bombs
+                    if int(tile.state) - tile.flaggedCount == 1:
                         for resRow, resCol in result:
                             openTile(resRow, resCol)
                     
-                    if int(tile.state) == 2 and tile.flaggedCount == 1:
-                        for resRow, resCol in result:
-                            openTile(resRow, resCol)
-                    
+                    # if bomb link in neighbours and there are no other possible closed tiles
                     if int(tile.state) - tile.flaggedCount == len(result) + 1:
                         for resRow, resCol in result:
                             flagTile(resRow, resCol)
 
+                # check the scenarios if not
+                else:
+                    # ! might not work !
+                    # length of possible group already checked before, possibleGroup is >= 2
+                    # if bomb link not completely in neighbours but no other possible closed tiles
+                    if int(tile.state) - tile.flaggedCount - 1 == len(result):
+                        for resRow, resCol in result:
+                            flagTile(resRow, resCol)                   
+
+print("\nStarting solver...")
 # take screenshot of the board
 with mss.mss() as sct:
     # The screen part to capture
     monitor = {"top": BOARD_TOP, "left": BOARD_LEFT, "width": BOARD_WIDTH, "height": BOARD_HEIGHT}
-    output = "sct-{top}x{left}_{width}x{height}.png".format(**monitor)
+    output = DATA_DIR + "/board-{top}x{left}_{width}x{height}.png".format(**monitor)
 
     monitor2 = {"top": EMOJI_TOP, "left": EMOJI_LEFT, "width": EMOJI_WIDTH, "height": EMOJI_HEIGHT}
-    output2 = "sct-{top}x{left}_{width}x{height}.png".format(**monitor2)
+    output2 = DATA_DIR + "/emoji-{top}x{left}_{width}x{height}.png".format(**monitor2)
     
     # main solver loop
     while True:
-        
+
         # grab the board and emoji data
         ss_board = sct.grab(monitor)
         ss_emoji = sct.grab(monitor2)
+
+        # save to the picture file
+        mss.tools.to_png(ss_board.rgb, ss_board.size, output=output)
+        mss.tools.to_png(ss_emoji.rgb, ss_emoji.size, output=output2)
+
         ssToArr(ss_board)
         
         # break condition, win or fail
@@ -234,9 +246,5 @@ with mss.mss() as sct:
         
         # solver logic
         processBoard()
-
-    # Save to the picture file
-    mss.tools.to_png(ss_board.rgb, ss_board.size, output=output)
-    mss.tools.to_png(ss_emoji.rgb, ss_emoji.size, output=output2)
 
 log.close()
