@@ -19,6 +19,7 @@ COLS = 16
 CELL_SIZE = BOARD_WIDTH // ROWS # 36
 
 COLOR_DICT = {
+    (102, 221, 102) : "start",
     (112, 120, 128) : "closed",
     (30, 38, 46) : "opened",
     (216, 224, 232) : "*", # flag

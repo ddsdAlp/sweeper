@@ -48,7 +48,9 @@ def ssToArr(img):
 
             # closed
             if topLeftRGB == (112, 120, 128):
-                if typeCheckRGB in COLOR_DICT:
+                if img.pixel(colCoord + 17, rowCoord + 17) == (102, 221, 102):
+                    BOARD[row][col].state = "x"
+                elif typeCheckRGB in COLOR_DICT:
                     BOARD[row][col].state = COLOR_DICT[typeCheckRGB]
                 else:
                     BOARD[row][col].state = "-"
@@ -133,7 +135,7 @@ def openClosedNeighbours(neighbours):
             mouse.leftClickCell(i, j)
 
 def openTile(row, col):
-    if BOARD[row][col].state == "-":
+    if BOARD[row][col].state in ["-", "x"]:
         BOARD[row][col].state = "-1"
         mouse.leftClickCell(row, col)
 
@@ -157,6 +159,10 @@ def processBoard():
 
             # skip unnecessarry tiles
             if tile.state in ["-", "0", "*"]:
+                continue
+
+            if tile.state == "x":
+                openTile(row, col)
                 continue
             
             # get all neighbour coords

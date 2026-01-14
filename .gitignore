@@ -1,7 +1,7 @@
 *.png
 *.pyc
+*.aseprite
 
-/assets
 /data
 __pycache__/
 
