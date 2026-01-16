@@ -1,24 +1,8 @@
 import mss
 from dataclasses import dataclass, field
 import mouse
-from config import (
-    DATA_DIR,
-    LOG_FILE_PATH,
-    BOARD_TOP,
-    BOARD_LEFT,
-    BOARD_WIDTH,
-    BOARD_HEIGHT,
-    EMOJI_TOP,
-    EMOJI_LEFT,
-    EMOJI_WIDTH,
-    EMOJI_HEIGHT,
-    ROWS,
-    COLS,
-    CELL_SIZE,
-    COLOR_DICT
-)
-
-log = open(LOG_FILE_PATH, "w")
+import calibration
+import config
 
 @dataclass
 class Tile:
@@ -27,37 +11,35 @@ class Tile:
     flaggedCount: int
     closedGroup: list = field(default_factory=list)
 
-BOARD = [[Tile(state="-", closedCount=0, flaggedCount=0, closedGroup=[]) for i in range(COLS)] for j in range(ROWS)]
-
 # print the BOARD array
 def printBoard():
-    for row in range(ROWS):
+    for row in range(config.ROWS):
         temp = ""
-        for col in range(COLS):
+        for col in range(config.COLS):
             temp = temp + str(BOARD[row][col].state) + " "
         print(temp)
 
 # turn screenshot into BOARD array
-def ssToArr(img):
-    for row in range(ROWS):
-        rowCoord = row * CELL_SIZE
-        for col in range(COLS):
-            colCoord = col * CELL_SIZE
+def screenshotToArray(img):
+    for row in range(config.ROWS):
+        rowCoord = row * config.CELL_SIZE
+        for col in range(config.COLS):
+            colCoord = col * config.CELL_SIZE
             topLeftRGB = img.pixel(colCoord, rowCoord)
-            typeCheckRGB = img.pixel(colCoord + round(0.6 * CELL_SIZE), rowCoord + round(0.73 * CELL_SIZE))
+            typeCheckRGB = img.pixel(colCoord + round(0.6 * config.CELL_SIZE), rowCoord + round(0.73 * config.CELL_SIZE))
 
             # closed
             if topLeftRGB == (112, 120, 128):
-                if img.pixel(colCoord + CELL_SIZE//2 - 1, rowCoord + CELL_SIZE//2 - 1) == (102, 221, 102):
+                if img.pixel(colCoord + config.CELL_SIZE//2 - 1, rowCoord + config.CELL_SIZE//2 - 1) == (102, 221, 102):
                     BOARD[row][col].state = "x"
-                elif typeCheckRGB in COLOR_DICT:
-                    BOARD[row][col].state = COLOR_DICT[typeCheckRGB]
+                elif typeCheckRGB in config.COLOR_DICT:
+                    BOARD[row][col].state = config.COLOR_DICT[typeCheckRGB]
                 else:
                     BOARD[row][col].state = "-"
             # opened
             elif topLeftRGB == (30, 38, 46):
-                if typeCheckRGB in COLOR_DICT:
-                    BOARD[row][col].state = COLOR_DICT[typeCheckRGB]
+                if typeCheckRGB in config.COLOR_DICT:
+                    BOARD[row][col].state = config.COLOR_DICT[typeCheckRGB]
                 else:
                     BOARD[row][col].state = "0"
 
@@ -153,8 +135,8 @@ def flagTile(row, col):
 # ========================================
 
 def processBoard():
-    for row in range(ROWS):
-        for col in range(COLS):
+    for row in range(config.ROWS):
+        for col in range(config.COLS):
             tile = BOARD[row][col]
 
             # skip unnecessarry tiles
@@ -224,30 +206,52 @@ def processBoard():
                             flagTile(resRow, resCol)                   
 
 print("\nStarting solver...")
+log = open(config.LOG_FILE_PATH, "w")
+
+entireBoardRGB1 = (120, 128, 136)
+entireBoardRGB2 = (30, 38, 46)
+
+mineBoardRGB1 = (112, 120, 128)
+mineBoardRGB2 = (34, 42, 50)
+
+# Find the minesweeper board and configure the values in config.py
+calibration.configureBoard(mineBoardRGB1, mineBoardRGB2)
+
+# create our own board
+BOARD = [[Tile(state="-", closedCount=0, flaggedCount=0, closedGroup=[]) for i in range(config.COLS)] for j in range(config.ROWS)]
+
 # take screenshot of the board
 with mss.mss() as sct:
     # The screen part to capture
-    monitor = {"top": BOARD_TOP, "left": BOARD_LEFT, "width": BOARD_WIDTH, "height": BOARD_HEIGHT}
-    output = DATA_DIR + "/board-{top}x{left}_{width}x{height}.png".format(**monitor)
+    monitor = {"top": config.BOARD_TOP, "left": config.BOARD_LEFT, "width": config.BOARD_WIDTH, "height": config.BOARD_HEIGHT}
+    output = config.DATA_DIR + "/board-{top}x{left}_{width}x{height}.png".format(**monitor)
 
-    monitor2 = {"top": EMOJI_TOP, "left": EMOJI_LEFT, "width": EMOJI_WIDTH, "height": EMOJI_HEIGHT}
-    output2 = DATA_DIR + "/emoji-{top}x{left}_{width}x{height}.png".format(**monitor2)
+    # monitor2 = {"top": config.EMOJI_TOP, "left": config.EMOJI_LEFT, "width": config.EMOJI_WIDTH, "height": config.EMOJI_HEIGHT}
+    # output2 = config.DATA_DIR + "/emoji-{top}x{left}_{width}x{height}.png".format(**monitor2)
     
+    monitor3 = sct.monitors[1]
+    
+    emojiX, emojiY = config.EMOJI_CHECK_COORDS
+
     # main solver loop
     while True:
 
         # grab the board and emoji data
         ss_board = sct.grab(monitor)
-        ss_emoji = sct.grab(monitor2)
+        # ss_emoji = sct.grab(monitor2)
+        ss_screen = sct.grab(monitor3)
 
         # save to the picture file
         mss.tools.to_png(ss_board.rgb, ss_board.size, output=output)
-        mss.tools.to_png(ss_emoji.rgb, ss_emoji.size, output=output2)
+        # mss.tools.to_png(ss_emoji.rgb, ss_emoji.size, output=output2)
+        # mss.tools.to_png(ss_screen.rgb, ss_screen.size, output="screen.png")
 
-        ssToArr(ss_board)
+        screenshotToArray(ss_board)
         
+        emojiCheck = ss_screen.pixel(emojiX, emojiY)
         # break condition, win or fail
-        if ss_emoji.pixel(33, 20) == (0,0,0):
+        if not calibration.colorDifference(emojiCheck, (0,0,0), tolerance=5):
+            print("Stop condition reached.")
             break
         
         # solver logic
