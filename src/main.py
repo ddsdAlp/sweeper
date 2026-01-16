@@ -215,7 +215,7 @@ mineBoardRGB1 = (112, 120, 128)
 mineBoardRGB2 = (34, 42, 50)
 
 # Find the minesweeper board and configure the values in config.py
-calibration.configureBoard(mineBoardRGB1, mineBoardRGB2)
+# calibration.configureBoard(mineBoardRGB1, mineBoardRGB2)
 
 # create our own board
 BOARD = [[Tile(state="-", closedCount=0, flaggedCount=0, closedGroup=[]) for i in range(config.COLS)] for j in range(config.ROWS)]
