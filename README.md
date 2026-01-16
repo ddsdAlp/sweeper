@@ -1,4 +1,4 @@
-# Minesweeper Solver
+# Sweeper
 <p align="center">
     <img src="assets/sweeper.gif" alt="demo" width="300">
 </p>
