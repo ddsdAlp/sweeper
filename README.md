@@ -28,7 +28,7 @@ pip install -r requirements.txt
 ```
 ## Usage
 1. Open 'minesweeper.online' in your browser
-2. Run the 'calibration.py' script to detect board coordinates
+2. Run the 'configure.py' script to detect board coordinates
 3. Adjust coordinates in 'config.py' if needed
 4. Run the solver ('main.py')
 
